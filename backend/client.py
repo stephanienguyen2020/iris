@@ -1,4 +1,5 @@
 import socket
+from time import sleep
 
 class VideoClient:
     def __init__(self, server_host, server_port, video_path, save_path):
@@ -14,10 +15,16 @@ class VideoClient:
             sock.connect((self.server_host, self.server_port))
             print("Connected to server.")
             # Send the video to the server
+            sz = 0
             with open(self.video_path, 'rb') as file:
-                while (chunk := file.read(4096)):
+                while True:
+                    chunk = file.read(4096)
+                    sleep(0.005)
+                    sz = sz + len(chunk)
+                    if not chunk:
+                        break
                     sock.sendall(chunk)
-            sock.sendall(b"EOF")
+            sock.sendall(b"\xfe\xff\xfe\xff\xfe\xff\xfe\xff\xfe\xff\xfe\xff\xfe\xff\xfe\xff")
             print("Video sent successfully.")
             # Receive the processed video from the server
             self.receive_video(sock)
@@ -29,6 +36,7 @@ class VideoClient:
     def receive_video(self, sock):
         """Receives the processed video from the server and saves it to disk."""
         print("Receiving processed video from the server.")
+        sock.settimeout(120)
         with open(self.save_path, 'wb') as file:
             while True:
                 data = sock.recv(4096)
@@ -40,8 +48,8 @@ class VideoClient:
 # if __name__ == "__main__":
 #     # Example usage
 #     SERVER_HOST = '64.181.228.194'  # Server IP address
-#     SERVER_PORT = 8995             # Server port number
-#     VIDEO_PATH = 'img.mov'  # Path to the video file to send
+#     SERVER_PORT = 8009        # Server port number
+#     VIDEO_PATH = 'im.mov' # Path to the video file to send
 #     SAVE_PATH = 'output_video.mp4'  # Path to save the received video file
 #     client = VideoClient(SERVER_HOST, SERVER_PORT, VIDEO_PATH, SAVE_PATH)
 #     client.send_video()
