@@ -46,6 +46,8 @@ class VideoClient:
             # Convert the received bytes back to a dictionary
             word_frame_json = data.decode('utf-8')
             word_frame_dict = json.loads(word_frame_json)
+            with open("frame.json", "w") as outfile:
+                outfile.write(word_frame_json)
             return word_frame_dict
         except Exception as e:
             print(f"Failed to receive frame dictionary: {e}")
