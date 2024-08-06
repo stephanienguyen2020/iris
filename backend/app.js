@@ -1,85 +1,69 @@
-require('dotenv').config();
 const express = require('express');
+const bodyParser = require('body-parser');
 const multer = require('multer');
 const AWS = require('aws-sdk');
-const fs = require('fs');
-const path = require('path');
+const cors = require('cors');
+require('dotenv').config();
 
-// Configure AWS with your access and secret key.
+const app = express();
+const port = 5000;
+
+app.use(bodyParser.json());
+app.use(cors());
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION
+  region: process.env.REGION,
 });
 
-// Create S3 and SQS service objects
 const s3 = new AWS.S3();
-const sqs = new AWS.SQS();
+const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
-const app = express();
-const port = 3000;
+const S3_BUCKET = process.env.S3_BUCKET;
+const DYNAMO_TABLE = process.env.DYNAMO_TABLE;
 
-// Configure multer for file upload
-const upload = multer({ dest: 'uploads/' });
+app.post('/upload', upload.single('file'), async (req, res) => {
+  console.log("did it come here by any chance")
+  const { text, item_id } = req.body;
+  const file = req.file;
 
-const uploadVideoToS3AndPushToSQS = async (filePath, fileName, additionalParams) => {
-  try {
-    const fileContent = fs.readFileSync(filePath);
-
-    // Uploading files to the bucket
-    const uploadParams = {
-      Bucket: process.env.S3_BUCKET_NAME,
-      Key: fileName, // File name you want to save as in S3
-      Body: fileContent,
-      ContentType: 'video/mp4' // Change accordingly based on your video type
-    };
-
-    const uploadResult = await s3.upload(uploadParams).promise();
-
-    console.log("uploadResult", uploadResult)
-
-    // Construct the message to send to SQS
-    const messageBody = {
-      s3Url: uploadResult.Location,
-      ...additionalParams // Spread any additional parameters here
-    };
-
-    const sqsParams = {
-      QueueUrl: process.env.SQS_QUEUE_URL,
-      MessageBody: JSON.stringify(messageBody),
-    };
-
-    await sqs.sendMessage(sqsParams).promise();
-
-    console.log(`Successfully uploaded ${fileName} to ${uploadResult.Location} and sent to SQS`);
-
-  } catch (error) {
-    console.error('Error uploading video or sending to SQS', error);
-    throw error;
+  if (!file || !text || !item_id) {
+    return res.status(400).send('File, text input, and item ID are required.');
   }
-};
 
-// API endpoint to accept video upload
-app.post('/upload', upload.single('video'), async (req, res) => {
+  const s3Params = {
+    Bucket: S3_BUCKET,
+    Key: `${Date.now()}_${file.originalname}`, // Use a timestamp to ensure unique filenames
+    Body: file.buffer,
+    ContentType: file.mimetype,
+  };
+
   try {
-    const filePath = req.file.path;
-    const fileName = req.file.originalname;
-    const additionalParams = {
-      title: req.body.title || 'Default Title',
-      description: req.body.description || 'Default Description'
-    }; // Additional parameters to send to SQS
+    const s3Response = await s3.upload(s3Params).promise();
 
-    await uploadVideoToS3AndPushToSQS(filePath, fileName, additionalParams);
+    const dynamoParams = {
+      TableName: DYNAMO_TABLE,
+      Item: {
+        item_id: item_id,
+        text: text,
+        s3Location: s3Response.Location,
+        timestamp: new Date().toISOString(),
+      },
+    };
 
-    // Delete the file from local storage after upload
-    fs.unlinkSync(filePath);
+    await dynamoDB.put(dynamoParams).promise();
 
-    res.status(200).send({ message: 'Video uploaded and message sent to SQS successfully.' });
+    res.status(200).json({ message: 'File uploaded to S3 and metadata stored in DynamoDB successfully!' });
   } catch (error) {
-    res.status(500).send({ error: 'Error uploading video or sending to SQS' });
+    console.error('Error uploading to S3 or writing to DynamoDB:', error);
+    res.status(500).json({ error: 'Error uploading to S3 or writing to DynamoDB' });
   }
 });
 
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+  console.log(`Server running on http://localhost:${port}`);
 });
