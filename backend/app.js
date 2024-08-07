@@ -1,85 +1,133 @@
-require('dotenv').config();
 const express = require('express');
+const bodyParser = require('body-parser');
 const multer = require('multer');
 const AWS = require('aws-sdk');
-const fs = require('fs');
-const path = require('path');
+const cors = require('cors');
+require('dotenv').config();
+const { v4: uuidv4 } = require('uuid');
 
-// Configure AWS with your access and secret key.
+const app = express();
+const port = 5000;
+
+app.use(bodyParser.json());
+app.use(cors());
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION
+  region: process.env.REGION,
 });
 
-// Create S3 and SQS service objects
 const s3 = new AWS.S3();
-const sqs = new AWS.SQS();
+const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
-const app = express();
-const port = 3000;
+const S3_BUCKET = process.env.S3_BUCKET;
+const DYNAMO_TABLE = process.env.DYNAMO_TABLE;
 
-// Configure multer for file upload
-const upload = multer({ dest: 'uploads/' });
+app.post('/upload', upload.single('file'), async (req, res) => {
 
-const uploadVideoToS3AndPushToSQS = async (filePath, fileName, additionalParams) => {
+  const file = req.file;
+
+  if (!file) {
+    return res.status(400).send('File is required.');
+  }
+
+  const uniqueItemId = uuidv4();
+
+  const s3Params = {
+    Bucket: S3_BUCKET,
+    Key: `${Date.now()}_${file.originalname}`, // Use a timestamp to ensure unique filenames
+    Body: file.buffer,
+    ContentType: file.mimetype,
+  };
+
   try {
-    const fileContent = fs.readFileSync(filePath);
+    const s3Response = await s3.upload(s3Params).promise();
 
-    // Uploading files to the bucket
-    const uploadParams = {
-      Bucket: process.env.S3_BUCKET_NAME,
-      Key: fileName, // File name you want to save as in S3
-      Body: fileContent,
-      ContentType: 'video/mp4' // Change accordingly based on your video type
+    const dynamoParams = {
+      TableName: DYNAMO_TABLE,
+      Item: {
+        item_id: uniqueItemId,
+        s3Location: s3Response.Location,
+        status: 'processing', // Initial status
+        timestamp: new Date().toISOString(),
+      },
     };
 
-    const uploadResult = await s3.upload(uploadParams).promise();
+    await dynamoDB.put(dynamoParams).promise();
 
-    console.log("uploadResult", uploadResult)
-
-    // Construct the message to send to SQS
-    const messageBody = {
-      s3Url: uploadResult.Location,
-      ...additionalParams // Spread any additional parameters here
-    };
-
-    const sqsParams = {
-      QueueUrl: process.env.SQS_QUEUE_URL,
-      MessageBody: JSON.stringify(messageBody),
-    };
-
-    await sqs.sendMessage(sqsParams).promise();
-
-    console.log(`Successfully uploaded ${fileName} to ${uploadResult.Location} and sent to SQS`);
-
+    res.status(200).json({ message: 'File uploaded to S3 and metadata stored in DynamoDB successfully!', itemId: uniqueItemId });
   } catch (error) {
-    console.error('Error uploading video or sending to SQS', error);
-    throw error;
+    console.error('Error uploading to S3 or writing to DynamoDB:', error);
+    res.status(500).json({ error: 'Error uploading to S3 or writing to DynamoDB' });
+  }
+});
+
+const checkStatus = async (itemId) => {
+  const dynamoParams = {
+    TableName: DYNAMO_TABLE,
+    Key: {
+      item_id: itemId,
+    },
+  };
+
+  try {
+    const data = await dynamoDB.get(dynamoParams).promise();
+    return data.Item ? data.Item.status : null;
+  } catch (error) {
+    console.error('Error querying DynamoDB:', error);
+    throw new Error('Error querying DynamoDB');
   }
 };
 
-// API endpoint to accept video upload
-app.post('/upload', upload.single('video'), async (req, res) => {
+const getVideoFromS3 = async (itemId) => {
+  const s3Params = {
+    Bucket: S3_BUCKET,
+    Key: `${itemId}_output_video.mp4`, // Assuming the output video is saved with this key
+  };
+
   try {
-    const filePath = req.file.path;
-    const fileName = req.file.originalname;
-    const additionalParams = {
-      title: req.body.title || 'Default Title',
-      description: req.body.description || 'Default Description'
-    }; // Additional parameters to send to SQS
-
-    await uploadVideoToS3AndPushToSQS(filePath, fileName, additionalParams);
-
-    // Delete the file from local storage after upload
-    fs.unlinkSync(filePath);
-
-    res.status(200).send({ message: 'Video uploaded and message sent to SQS successfully.' });
+    const data = await s3.getObject(s3Params).promise();
+    return data.Body;
   } catch (error) {
-    res.status(500).send({ error: 'Error uploading video or sending to SQS' });
+    console.error('Error fetching video from S3:', error);
+    throw new Error('Error fetching video from S3');
+  }
+};
+
+app.get('/status/:itemId', async (req, res) => {
+  const { itemId } = req.params;
+
+  const pollStatus = async () => {
+    let status = await checkStatus(itemId);
+    while (status !== 'done') {
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for 2 seconds before checking again
+      status = await checkStatus(itemId);
+    }
+    return status;
+  };
+
+  try {
+    const finalStatus = await pollStatus();
+    if (finalStatus === 'done') {
+      const videoData = await getVideoFromS3(itemId);
+      res.writeHead(200, {
+        'Content-Type': 'video/mp4',
+        'Content-Length': videoData.length,
+      });
+      res.end(videoData);
+    } else {
+      res.status(500).json({ error: 'Error fetching the final status' });
+    }
+  } catch (error) {
+    console.error('Error polling status:', error);
+    res.status(500).json({ error: 'Error polling status' });
   }
 });
 
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+  console.log(`Server running on http://localhost:${port}`);
 });
