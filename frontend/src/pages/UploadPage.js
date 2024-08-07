@@ -7,104 +7,52 @@ import CustomStepper from '../components/CustomStepper';
 import UploadBox from '../components/UploadBox';
 import NavigationButtons from '../components/NavigationButtons';
 import Iris_2 from '../images/Iris_2.png';
-import { nanoid } from "nanoid";
-import executeScript from "./script";
+import axios from 'axios'; // Import Axios
 
-import AWS from "aws-sdk";
- 
 function UploadPage() {
   const navigate = useNavigate();
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [file, setFile] = useState(null);
-  const item_id = nanoid();
 
   const handleBack = () => {
     navigate('/');
   };
 
-  const handleContinue = () => {
-    // Check if a file has been uploaded
+  const handleContinue = async () => {
     if (uploadedFile) {
-      // You might want to show a loading indicator here
       setIsLoading(true);
-  
-      // Simulate file processing or API call
-      setTimeout(() => {
+      setErrorMessage(''); // Clear any previous error messages
+
+      const formData = new FormData();
+      formData.append('file', uploadedFile);
+
+      try {
+        // API call to local server
+        const response = await axios.post('http://localhost:5000/upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        // Handle the response as needed
+        console.log(response.data);
+        navigate('/analyze'); // Navigate to the next page
+      } catch (error) {
+        // Handle errors
+        console.error('Error uploading file:', error);
+        setErrorMessage('Failed to upload file. Please try again.');
+      } finally {
         setIsLoading(false);
-        // Navigate to the next page, e.g., analysis page
-        navigate('/analyze');
-      }, 2000); // Simulating a 2-second process
+      }
     } else {
-      // If no file is uploaded, show an error message
       setErrorMessage('Please upload a file before continuing.');
     }
   };
 
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!file) {
-      alert("Please provide a video file.");
-      return;
-    }
-
-    const S3_BUCKET = import.meta.env.VITE_S3_BUCKET_NAME;
-
-    await executeScript(S3_BUCKET, item_id);
-
-    // Initialize S3 client
-
-    const REGION = import.meta.env.VITE_AWS_REGION;
-
-    AWS.config.update({
-      accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID,
-      secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY,
-      region: REGION,
-    });
-
-    const s3 = new AWS.S3();
-
-    try {
-      const inputfileParams = {
-        Bucket: S3_BUCKET,
-        Key: `${item_id}/input_file.${file.type.split("/")[1]}`, // Dynamically set the file extension
-        Body: file,
-        ContentType: file.type,
-      };
-
-      try {
-        const uploadInputFileResult = await s3.upload(inputfileParams).promise();
-        console.log("uploadInputFileResult", uploadInputFileResult);
-      } catch (error) {
-        console.error("Error uploading file:", error);
-      }
-
-      // const formData = new FormData();
-      // formData.append("file", file);
-      // formData.append(
-      //   "s3Location",
-      //   `s3://${S3_BUCKET}/${item_id}/input_file.${file.type.split("/")[1]}`
-      // );
-      // formData.append("item_id", item_id);
-
-      // const response = await axios.post(API_BASE_URL, formData, {
-      //   headers: {
-      //     "Content-Type": "multipart/form-data",
-      //   },
-      // });
-
-      // if (response.status !== 200) {
-      //   throw new Error(`HTTP error! status: ${response.status}`);
-      // }
-
-      alert("File uploaded and path stored successfully!");
-    } catch (error) {
-      console.error("Error uploading file or storing path:", error);
-      alert("There was an error uploading the file or storing the path.");
-    }
+  const handleFileUpload = (file) => {
+    setUploadedFile(file);
+    setErrorMessage(''); // Clear any previous error messages
   };
 
   return (
@@ -125,15 +73,16 @@ function UploadPage() {
           }}
         />
         <Box
-            onClick={handleBack}
-            sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '15%',
-              height: '10%', // This makes the clickable area the top 1/5 of the image
-            }}
-          />
+          onClick={handleBack}
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '15%',
+            height: '10%',
+            cursor: 'pointer', // Indicate that the area is clickable
+          }}
+        />
         <Container 
           maxWidth={false} 
           disableGutters 
@@ -170,7 +119,7 @@ function UploadPage() {
                 Let's begin <span role="img" aria-label="waving hand">👋</span> 
               </Typography>
             </Box>
-            <UploadBox onFileUpload={handleSubmit} />
+            <UploadBox onFileUpload={handleFileUpload} />
             {isLoading && <CircularProgress sx={{ alignSelf: 'center', mt: 2 }} />}
             {errorMessage && <Typography color="error" sx={{ mt: 2 }}>{errorMessage}</Typography>}
             <br/>

@@ -4,15 +4,13 @@ import { ThemeProvider } from '@mui/material/styles';
 import { Typography, Paper, Box, Container, Button } from '@mui/material';
 import theme from '../styles/theme';
 import Iris_1 from '../images/Iris_1.png';
-import { Link } from 'react-router-dom';
-
 
 function HomePage() {
   const navigate = useNavigate();
 
   const handleScanClick = () => {
     console.log('Button clicked');
-    navigate('/upload');
+    navigate('/upload'); // Navigates to the UploadPage component
   };
 
   return (
@@ -27,7 +25,7 @@ function HomePage() {
           src={Iris_1}
           alt="Iris_1"
           sx={{ 
-            width: 'auto%',
+            width: 'auto',
             height: '100%',
             objectFit: 'cover',
           }}
@@ -56,37 +54,36 @@ function HomePage() {
             }}
           >
             <Typography variant="overline" gutterBottom>
-              Your AI Curator
+              PRIVACY & COMPLIANCE CHECKER
             </Typography>
             <Typography variant="h2" gutterBottom fontWeight="bold">
-              Let us help you with your videos{' '}
+              Safeguard your Content before Posting{' '}
               <span role="img" aria-label="eyes">👀</span>
             </Typography>
             <Typography variant="body1" gutterBottom sx={{ mb: 4 }}>
-              Designed to simplify your work and skyrocket productivity, our
-              templates are the secret ingredient to achieving outstanding results
-              in record time.
+              Iris scans videos for sensitive information and inappropriate content 
+              before you post, ensuring your privacy and compliance with platform
+              guidelines. Upload your video NOW to get a detailed report and clean
+              version ready for safe sharing.
             </Typography>
-            <Link to="/upload" style={{ textDecoration: 'none' }}>
-              <Button 
-                variant="contained" 
-                onClick={handleScanClick}
-                sx={{ 
-                  bgcolor: '#000000',
-                  color: 'common.white',
-                  borderRadius: '50px',
-                  padding: '12px 12px',
-                  paddingLeft: '70px',
-                  paddingRight: '70px',
-                  '&:hover': {
-                    bgcolor: 'grey.800',
-                  },
-                  fontSize: '15pt'
-                }}
-              >
-                Scan my video
-              </Button>
-            </Link>
+            <Button 
+              variant="contained" 
+              onClick={handleScanClick}
+              sx={{ 
+                bgcolor: '#000000',
+                color: 'common.white',
+                borderRadius: '50px',
+                padding: '12px 12px',
+                paddingLeft: '70px',
+                paddingRight: '70px',
+                '&:hover': {
+                  bgcolor: 'grey.800',
+                },
+                fontSize: '15pt'
+              }}
+            >
+              Scan my video
+            </Button>
           </Paper>
         </Container>
       </Box>
