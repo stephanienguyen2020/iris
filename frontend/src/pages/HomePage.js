@@ -82,7 +82,7 @@ function HomePage() {
                 fontSize: '15pt'
               }}
             >
-              Scan my video
+              Scan my Video
             </Button>
           </Paper>
         </Container>
