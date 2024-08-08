@@ -6,7 +6,7 @@ import theme from '../styles/theme';
 import CustomStepper from '../components/CustomStepper';
 import UploadBox from '../components/UploadBox';
 import NavigationButtons from '../components/NavigationButtons';
-import Iris_4 from '../images/Iris_4.png';
+import Iris_2 from '../images/Iris_2.png';
 import axios from 'axios'; // Import Axios
 
 function UploadPage() {
@@ -37,7 +37,7 @@ function UploadPage() {
 
         // Handle the response as needed
         console.log(response.data);
-        navigate('/analyze'); // Navigate to the next page
+        navigate('/analyze', { state: { key: response.data.key, itemId: response.data.itemId, videoUrl: URL.createObjectURL(uploadedFile) } }); // Pass the video URL
       } catch (error) {
         // Handle errors
         console.error('Error uploading file:', error);
@@ -64,8 +64,8 @@ function UploadPage() {
       }}>
         <Box 
           component="img"
-          src={Iris_4}
-          alt="Iris_4"
+          src={Iris_2}
+          alt="Iris_2"
           sx={{ 
             width: 'auto',
             height: '100%',
