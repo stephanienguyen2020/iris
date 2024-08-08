@@ -36,10 +36,10 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   }
 
   const uniqueItemId = uuidv4();
-
+  const key = `${Date.now()}_${file.originalname}`
   const s3Params = {
     Bucket: S3_BUCKET,
-    Key: `${Date.now()}_${file.originalname}`, // Use a timestamp to ensure unique filenames
+    Key: key, // Use a timestamp to ensure unique filenames
     Body: file.buffer,
     ContentType: file.mimetype,
   };
@@ -59,7 +59,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     await dynamoDB.put(dynamoParams).promise();
 
-    res.status(200).json({ message: 'File uploaded to S3 and metadata stored in DynamoDB successfully!', itemId: uniqueItemId });
+    res.status(200).json({ message: 'File uploaded to S3 and metadata stored in DynamoDB successfully!', itemId: uniqueItemId, key : key});
   } catch (error) {
     console.error('Error uploading to S3 or writing to DynamoDB:', error);
     res.status(500).json({ error: 'Error uploading to S3 or writing to DynamoDB' });
@@ -83,10 +83,11 @@ const checkStatus = async (itemId) => {
   }
 };
 
-const getVideoFromS3 = async (itemId) => {
+const getVideoFromS3 = async (key) => {
   const s3Params = {
     Bucket: S3_BUCKET,
-    Key: `${itemId}_output_video.mp4`, // Assuming the output video is saved with this key
+    key : key
+    // Key: `${itemId}_output_video.mp4`, // Assuming the output video is saved with this key
   };
 
   try {
@@ -98,9 +99,9 @@ const getVideoFromS3 = async (itemId) => {
   }
 };
 
-app.get('/status/:itemId', async (req, res) => {
-  const { itemId } = req.params;
+app.get('/status/:itemId/:key', async (req, res) => {
 
+  const { itemId, key } = req.params;
   const pollStatus = async () => {
     let status = await checkStatus(itemId);
     while (status !== 'done') {
@@ -113,7 +114,7 @@ app.get('/status/:itemId', async (req, res) => {
   try {
     const finalStatus = await pollStatus();
     if (finalStatus === 'done') {
-      const videoData = await getVideoFromS3(itemId);
+      const videoData = await getVideoFromS3(key);
       res.writeHead(200, {
         'Content-Type': 'video/mp4',
         'Content-Length': videoData.length,
