@@ -5,6 +5,7 @@ import UploadPage from './pages/UploadPage';
 import DetectPage from './pages/DetectPage';
 import ReviewPage from './pages/ReviewPage';
 import PublishPage from './pages/PublishPage';
+import AnalyzePage from './pages/analyzePage';
 
 function App() {
   return (
