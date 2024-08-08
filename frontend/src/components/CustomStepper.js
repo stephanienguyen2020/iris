@@ -4,7 +4,7 @@ import { ColorlibConnector } from '../styles/theme';
 
 const steps = ['Upload', 'Analyze', 'Detect', 'Review', 'Publish'];
 
-function CustomStepper() {
+function CustomStepper({activeStep}) {
   return (
     <Stepper activeStep={0} alternativeLabel connector={<ColorlibConnector />}>
       {steps.map((label, index) => (
@@ -14,7 +14,7 @@ function CustomStepper() {
               sx: {
                 width: 35,
                 height: 35,
-                color: index === 0 ? 'primary.main' : 'grey.main',
+                color: index === activeStep ? 'primary.main' : 'grey.main',
                 '&.Mui-active': {
                   color: 'primary.main',
                 },
