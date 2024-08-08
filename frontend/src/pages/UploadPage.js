@@ -6,7 +6,7 @@ import theme from '../styles/theme';
 import CustomStepper from '../components/CustomStepper';
 import UploadBox from '../components/UploadBox';
 import NavigationButtons from '../components/NavigationButtons';
-import Iris_2 from '../images/Iris_2.png';
+import Iris_4 from '../images/Iris_4.png';
 import axios from 'axios'; // Import Axios
 
 function UploadPage() {
@@ -64,8 +64,8 @@ function UploadPage() {
       }}>
         <Box 
           component="img"
-          src={Iris_2}
-          alt="Iris_2"
+          src={Iris_4}
+          alt="Iris_4"
           sx={{ 
             width: 'auto',
             height: '100%',
