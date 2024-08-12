@@ -34,6 +34,32 @@ As human moderation becomes increasingly challenging, computerized supervision i
     touch .env
     echo GEMINI_API_KEY=[Your API Key] > .env
 
+## Running the Backend
+
+  # 1. Navigate to the backend directory:
+  cd backend
+  
+  # 2. Install the necessary dependencies:
+  npm install
+  
+  # 3. Start the backend server:
+  node app.js
+
+  # The client API will now be listening for requests.
+
+## Running the Frontend
+
+  # 1. Navigate to the frontend directory:
+  cd frontend
+  
+  # 2. Install the necessary dependencies:
+  npm install
+  
+  # 3. Start the frontend application:
+  npm start  # or `npm run dev` for development mode
+  
+  # This will open the webpage for the user to upload videos.
+
 License
 Released under the MIT License.
 
