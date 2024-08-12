@@ -1,14 +1,5 @@
-ai_prompt = f"""
-        You are a helpful assistant helping me check the quality of a single word. The text must follow these rules:
-            - No sensitive information
-            - No harmful content
-            - No inappropriate content
-            - No numbers, names, or anything that can provide personal info
-        For each criterion, please provide an answer in YES, NO, or N/A format.
-        Return the score for each criterion in the following format:
-        {{"sensitive_information": <ANSWER>, "harmful_content": <ANSWER>, "inappropriate_content": <ANSWER>, "leak_info": <ANSWER>}}
-        If you don't have any answer, please return {{}}
-        Quality check for the word: {text_input}
+prompt_ai = f"""
+        You are a helpful assistant helping me check the quality of a inputted text. The text must follow these rules:
 
         Additionally, the AI model receives a video file for analysis, with the objective of identifying Personally Identifiable Information (PII). The model should account for text and information that may be occluded, mirrored, difficult to see, or subtle.
 
@@ -39,3 +30,4 @@ ai_prompt = f"""
         Task Description:
         The AI model should carefully examine the video to identify various types of PII, accounting for cases where the information is occluded, mirrored, difficult to see, or subtle. The model should provide detailed explanations, specific examples, and qualitative risk assessments (High, Medium, Low) for each category. The analysis should consider the visibility and potential misuse of the information.
         """
+
