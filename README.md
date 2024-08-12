@@ -52,8 +52,67 @@ As human moderation becomes increasingly challenging, computerized supervision i
       npm start  # or `npm run dev` for development mode
   This will open the webpage for the user to upload videos.
 
-License
+## Actual Prompt:
+"""
+        You are a helpful assistant helping me check the quality of a inputted text. The text must follow these rules:
+
+        Additionally, the AI model receives a video file for analysis, with the objective of identifying sensitive information such as Personally Identifiable Information (PII) and passwords, keys. The model should account for text and information that may be occluded, mirrored, difficult to see, or subtle.
+
+        The output should meet the following requirements:
+
+        PII:
+        - Location:
+            - Explanation: Identify any information that could reveal a person's physical location. This includes addresses, recognizable landmarks, GPS coordinates, or any visual cues that may indicate where someone is located or resides. The model should be sensitive to location details that may be partially obscured, mirrored, or presented subtly.
+            - Details: Provide specific examples or frames where location information is detected, especially in challenging cases like occluded or mirrored text.
+            - Score: Assign a risk level (High, Medium, Low) based on the sensitivity and specificity of the location information identified.
+        - ID:
+            - Explanation: Detect any form of identification numbers or documents. This includes passports, driver's licenses, social security numbers, employee badges, or any visible documentation that contains unique identifiers. The model should consider IDs that may be partially hidden, difficult to discern, or mirrored.
+            - Details: Describe the type of identification detected, including challenging cases like occluded or hard-to-see details, and its potential implications.
+            - Score: Evaluate and assign a risk level (High, Medium, Low) based on the potential misuse of the identification information.
+        - MedicalInformation:
+            - Explanation: Identify any medical-related information. This includes visible documents, prescriptions, medical devices, or any discussion of medical conditions that could be tied to an individual. The model should be aware of medical information that is partially obscured or presented in a subtle manner.
+            - Details: Provide context around the medical information identified, including any challenges in visibility or subtlety, and discuss the potential implications.
+            - Score: Assign a risk level (High, Medium, Low) based on the sensitivity of the medical information and the risk of exposure.
+        - FinancialInformation:
+            - Explanation: Detect any financial information present in the video. This includes credit card numbers, bank statements, visible checkbooks, financial transaction details, or any discussion of personal financial matters. The model should identify financial data that may be obscured, mirrored, or hard to see.
+            - Details: Describe the financial information detected, including difficult-to-discern cases, and assess potential risks.
+            - Score: Evaluate the risk level (High, Medium, Low) based on the type and sensitivity of the financial information found.
+        - AdditionalPIICategories:
+            - Explanation: Identify any other forms of PII not covered in the previous categories. This could include personal emails, phone numbers, personal photos, or any other information that can be used to uniquely identify an individual. The model should be attentive to subtle or hard-to-see PII, including occluded or mirrored content.
+            - Details: Provide examples and context for the additional PII detected, explaining its potential risks, especially in cases where the PII is subtle or partially hidden.
+            - Score: Assess and assign a risk level (High, Medium, Low) based on the potential impact of the additional PII.
+        Passwords & Keys:
+        - Passwords:
+            - Explanation: Identify any forms of passwords. The model should be attentive to subtle or hard-to-see PII, including occluded or mirrored content.
+            - Details: Provide examples and context for the additional password detected, explaining its potential risks, especially in cases where the PII is subtle or partially hidden.
+            - Score: Assess and assign a risk level (High, Medium, Low) based on the potential impact of the additional password.
+        - Keys: 
+            - Explanation: Identify any other forms of keys for authentication. This could include personal emails, phone numbers, personal photos, or any other information that can be used to uniquely identify an individual. The model should be attentive to subtle or hard-to-see PII, including occluded or mirrored content.
+            - Details: Provide examples and context for the additional PII detected, explaining its potential risks, especially in cases where the PII is subtle or partially hidden.
+            - Score: Assess and assign a risk level (High, Medium, Low) based on the potential impact of the additional PII.
+        Task Description:
+        The AI model should carefully examine the video to identify various types of PII, accounting for cases where the information is occluded, mirrored, difficult to see, or subtle. The model should provide detailed explanations, specific examples, and qualitative risk assessments (High, Medium, Low) for each category. The analysis should consider the visibility and potential misuse of the information.
+"""
+
+### Purpose of the Prompt: 
+This prompt is designed to instruct an AI model to analyze a video and identify sensitive information with a high level of detail and accuracy. The AI must account for various challenges, such as information that is occluded (partially hidden), mirrored, difficult to see, or presented subtly. The goal is to ensure that no PII is overlooked, even in complex scenarios.
+### Key Components of the Prompt:
+#### Input Description:
+The AI is informed that the video may contain PII in forms that are not immediately obvious. This includes cases where text might be mirrored, hidden, or subtly embedded in the video. The AI needs to detect and account for these challenges during its analysis.
+#### Output Requirements:
+- Location Information: The AI must identify any data that reveals someone's physical location, such as addresses or landmarks. Special attention is given to details that may be obscured or mirrored. The AI will also provide specific examples or frames where this information is detected and assess the risk level.
+- ID Information: The AI is tasked with detecting identification documents or numbers, like passports or social security numbers, even if they are partially hidden or difficult to see. The AI will describe the type of ID detected and evaluate the risk of misuse.
+- Medical Information: The AI will look for any medical-related information, such as prescriptions or medical devices, and provide context around the challenges in visibility. The risk of exposure is then assessed.
+- Financial Information: The AI is responsible for identifying financial data, such as credit card numbers or bank statements, even if they are hard to see or mirrored. The prompt ensures that the AI describes the financial information detected and assesses its sensitivity.
+- Additional PII Categories: This catch-all category ensures that the AI identifies any other types of PII that don't fall into the previous categories. This could include emails, phone numbers, or personal photos. The AI must provide examples and assess the risk of exposure.
+
+### Task Description:
+The AI is required to perform a thorough examination of the video to identify all relevant PII, considering various challenges like occluded or mirrored content. The AI should not only detect the PII but also provide a detailed explanation of its findings, specific examples, and a qualitative risk assessment (High, Medium, Low) for each category of PII detected.
+### Why This Matters: 
+In scenarios where PII is hidden or presented subtly, it is crucial that the AI model goes beyond simple detection. The prompt ensures that the AI considers various complexities and provides detailed, actionable insights that can be used to mitigate the risks associated with exposing sensitive information in videos.
+
+## License
 Released under the MIT License.
 
-Disclaimer
+## Disclaimer
 Please note that while Iris strives for accurate censorship, there may still be instances where videos contain inappropriate content due to errors in the censorship process.
