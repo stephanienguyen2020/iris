@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import google.generativeai as genai
 import moviepy.editor as mp
 import whisper_timestamped as whisper
-
+from prompt import *
 
 load_dotenv(override=True)
 LIMIT_FRAME = 1
@@ -130,17 +130,7 @@ class VideoProcessor:
         genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
         self.model = genai.GenerativeModel("gemini-pro")
         response = self.model.generate_content(
-                        """
-                        You are a helpful assistant help me checking the quality of the a single word. The text must follow these rule:
-                            - No sensitive information
-                            - No harmful content
-                            - No inappropriate content
-                            - No number or name or anything that can provide info
-                            For each criteria, please provide a an answer in YES, NO, OR N/A format.
-                            Return the score for each criteria in the following format:
-                            {"sensitive_information": <ANSWER>, "harmful_content": <ANSWER>, "inappropriate_content": <ANSWER>, "leak_info": <ANSWER>}
-                            If you don't have any answer, please return {}
-                            Quality check for the word: """ + text_input
+                        prompt_ai + text_input
                     )
         return response.text
 
