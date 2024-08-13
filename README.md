@@ -5,6 +5,15 @@
 ## Overview
 Iris is a project designed to create a censorship engine for social media, focusing on redacting sensitive content within videos in mass.
 ![Flow Image](/images/flow.png)
+## Built With
+![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=white)
+![OpenCV](https://img.shields.io/badge/OpenCV-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white)
+![Gemini](https://img.shields.io/badge/Gemini-00A1E0?style=for-the-badge&logo=gemini&logoColor=white)
+![Google Cloud Storage](https://img.shields.io/badge/Google%20Cloud%20Storage-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)
+![Google Cloud](https://img.shields.io/badge/Google%20Cloud-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)
+![Vertex AI](https://img.shields.io/badge/Vertex%20AI-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)
+![EZOCR](https://img.shields.io/badge/EZOCR-FFD700?style=for-the-badge&logo=easyocr&logoColor=black)
+![Firebase Database](https://img.shields.io/badge/Firebase%20Database-FFCA28?style=for-the-badge&logo=firebase&logoColor=white)
 ## Motivation
 Millions of users share videos, short-form content, and create stories on social media everyday. YouTube alone has approximately 122 million daily active users all over the world. However, the current system struggles to detect and remove sensitive information in real-time. Videos containing passwords and personally identifiable information (so called PII) like addresses and credit card details are frequently taken down only after user reports, which can be too late since the information has already been leaked.
 As human moderation becomes increasingly challenging, computerized supervision is essential. Iris serves as a fully autonomous system that enables companies and users to blur out sensitive information seamlessly. We wanted to create a special censorship engine that will sanitize a video so that we wouldn't have to do it ourselves, solving the problem at its source.
