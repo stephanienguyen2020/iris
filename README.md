@@ -12,7 +12,7 @@ Iris is a project designed to create a censorship engine for social media, focus
 ![Google Cloud Storage](https://img.shields.io/badge/Google%20Cloud%20Storage-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)
 ![Google Cloud](https://img.shields.io/badge/Google%20Cloud-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)
 ![Vertex AI](https://img.shields.io/badge/Vertex%20AI-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)
-![EZOCR](https://img.shields.io/badge/EZOCR-FFD700?style=for-the-badge&logo=easyocr&logoColor=black)
+![EasyOcr](https://img.shields.io/badge/EasyOcr-FFD700?style=for-the-badge&logo=easyocr&logoColor=black)
 ![Firebase Database](https://img.shields.io/badge/Firebase%20Database-FFCA28?style=for-the-badge&logo=firebase&logoColor=white)
 ## Motivation
 Millions of users share videos, short-form content, and create stories on social media everyday. YouTube alone has approximately 122 million daily active users all over the world. However, the current system struggles to detect and remove sensitive information in real-time. Videos containing passwords and personally identifiable information (so called PII) like addresses and credit card details are frequently taken down only after user reports, which can be too late since the information has already been leaked.
