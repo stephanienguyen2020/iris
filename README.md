@@ -43,7 +43,7 @@ As human moderation becomes increasingly challenging, computerized supervision i
   This will open the webpage for the user to upload videos.
 
 ## Actual Prompt:
-"""
+```
         You are a helpful assistant helping me check the quality of a inputted text. The text must follow these rules:
 
         Additionally, the AI model receives a video file for analysis, with the objective of identifying sensitive information such as Personally Identifiable Information (PII) and passwords, keys. The model should account for text and information that may be occluded, mirrored, difficult to see, or subtle.
@@ -82,7 +82,7 @@ As human moderation becomes increasingly challenging, computerized supervision i
             - Score: Assess and assign a risk level (High, Medium, Low) based on the potential impact of the additional PII.
         Task Description:
         The AI model should carefully examine the video to identify various types of PII, accounting for cases where the information is occluded, mirrored, difficult to see, or subtle. The model should provide detailed explanations, specific examples, and qualitative risk assessments (High, Medium, Low) for each category. The analysis should consider the visibility and potential misuse of the information.
-"""
+```
 
 ### Purpose of the Prompt: 
 This prompt is designed to instruct an AI model to analyze a video and identify sensitive information with a high level of detail and accuracy. The AI must account for various challenges, such as information that is occluded (partially hidden), mirrored, difficult to see, or presented subtly. The goal is to ensure that no PII is overlooked, even in complex scenarios.
