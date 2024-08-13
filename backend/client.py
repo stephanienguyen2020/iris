@@ -3,11 +3,9 @@ from time import sleep
 import json
 
 class VideoClient:
-    def __init__(self, server_host, server_port, video_path, save_path):
+    def __init__(self, server_host, server_port):
         self.server_host = server_host
         self.server_port = server_port
-        self.video_path = video_path
-        self.save_path = save_path
         self.sock = None
 
     def connect(self):
@@ -16,10 +14,12 @@ class VideoClient:
         self.sock.connect((self.server_host, self.server_port))
         print("Connected to server.")
 
-    def send_video(self):
-        """Sends a video file to the server."""
+    def send(self, video, additional_parameters=None):
+        """Sends a video file and additional parameters to the server for analysis."""
         try:
-            with open(self.video_path, 'rb') as file:
+            if additional_parameters:
+                self.sock.sendall(json.dumps(additional_parameters).encode('utf-8') + b'\0')
+            with open(video, 'rb') as file:
                 while True:
                     chunk = file.read(4096)
                     sleep(0.009)
@@ -31,8 +31,8 @@ class VideoClient:
         except Exception as e:
             print(f"Failed to send video: {e}")
 
-    def receive_frame_dict(self):
-        """Receives the frame dictionary from the server."""
+    def request(self):
+        """Checks the processing status of the video."""
         self.sock.settimeout(500)
         data = b''
         try:
@@ -42,37 +42,60 @@ class VideoClient:
                 if b'\0' in data:
                     data = data.split(b'\0')[0]
                     break
-            print("Frame dictionary received successfully.")
-            # Convert the received bytes back to a dictionary
-            word_frame_json = data.decode('utf-8')
-            word_frame_dict = json.loads(word_frame_json)
-            with open("frame.json", "w") as outfile:
-                outfile.write(word_frame_json)
-            return word_frame_dict
+            status = json.loads(data.decode('utf-8'))
+            print("Processing status received.")
+            return status
         except Exception as e:
-            print(f"Failed to receive frame dictionary: {e}")
+            print(f"Failed to receive processing status: {e}")
             return None
 
-    def send_frame_dict(self, word_frame_dict):
-        """Sends the edited frame dictionary back to the server."""
+    def receive(self):
+        """Receives the PII detection results from the server."""
+        self.sock.settimeout(500)
+        data = b''
         try:
-            word_frame_json = json.dumps(word_frame_dict)
-            self.sock.sendall(word_frame_json.encode('utf-8') + b'\0')
-            print("Frame dictionary sent successfully.")
+            while True:
+                packet = self.sock.recv(4096)
+                data += packet
+                if b'\0' in data:
+                    data = data.split(b'\0')[0]
+                    break
+            pii_results = json.loads(data.decode('utf-8'))
+            print("PII detection results received.")
+            return pii_results
         except Exception as e:
-            print(f"Failed to send frame dictionary: {e}")
+            print(f"Failed to receive PII detection results: {e}")
+            return None
 
-    def receive_video(self):
-        """Receives the processed video from the server and saves it to disk."""
+    def blur(self, pii_instances, blur_radius, blur_opacity):
+        """Initiates the blurring of detected PII in the video."""
+        try:
+            blur_request = {
+                'PII': pii_instances,
+                'blur_radius': blur_radius,
+                'blur_opacity': blur_opacity
+            }
+            self.sock.sendall(json.dumps(blur_request).encode('utf-8') + b'\0')
+            print("Blurring initiated.")
+        except Exception as e:
+            print(f"Failed to initiate blurring: {e}")
+
+    def receiveVideo(self, save_path):
+        """Receives the processed (blurred) video from the server and saves it."""
         print("Receiving processed video from the server.")
         self.sock.settimeout(120)
-        with open(self.save_path, 'wb') as file:
-            while True:
-                data = self.sock.recv(4096)
-                if not data:
-                    break
-                file.write(data)
-        print("Processed video saved successfully.")
+        try:
+            with open(save_path, 'wb') as file:
+                while True:
+                    data = self.sock.recv(4096)
+                    if not data:
+                        break
+                    file.write(data)
+            print(f"Processed video saved successfully to {save_path}.")
+            return {'status': 'finished'}
+        except Exception as e:
+            print(f"Failed to receive processed video: {e}")
+            return {'status': 'failed'}
 
     def close(self):
         """Closes the socket connection."""
@@ -80,30 +103,14 @@ class VideoClient:
             self.sock.close()
             print("Connection closed.")
 
-# if __name__ == "__main__":
-#     # Example usage
-#     SERVER_HOST = '64.181.228.194'  # Server IP address
-#     SERVER_PORT = 9000              # Server port number
-#     VIDEO_PATH = 'IMG_9733.MOV'     # Path to the video file to send
-#     SAVE_PATH = 'output_video.mp4'  # Path to save the received video file
-    
-#     client = VideoClient(SERVER_HOST, SERVER_PORT, VIDEO_PATH, SAVE_PATH)
-    
-#     # Connect to the server
-#     client.connect()
-    
-#     # Send the video file
-#     client.send_video()
-    
-#     # Receive the frame dictionary
-#     frame_dict = client.receive_frame_dict()
-#     if frame_dict is not None:
-#         print("Received frame dictionary:", frame_dict)
-        
-#         client.send_frame_dict(frame_dict)
-    
-#     # Receive the processed video
-#     client.receive_video()
-    
-#     # Close the connection
-#     client.close()
+# Example usage:
+
+# client = VideoClient(server_host='64.181.228.194', server_port=9000)
+# client.connect()
+# client.send(video='IMG_9733.MOV', additional_parameters={'some_param': 'value'})
+# status = client.request()
+# if status and status['status'] == 'finished':
+#     pii_results = client.receive()
+#     client.blur(pii_instances=pii_results['PII'], blur_radius=5, blur_opacity=0.8)
+#     blurred_video = client.receiveVideo(save_path='output_video.mp4')
+# client.close()
