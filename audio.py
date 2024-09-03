@@ -5,7 +5,7 @@ from pydub.generators import Sine
 import json
 
 client = OpenAI(
-    api_key="sk-S5QFrzH_v_tZ0hwntioauCt1asDHbyBkBa5yeyHbwET3BlbkFJO5xfFrJ_2SOJ_zfAIjSMVFP5GHybC7FuEHUWfXmo0A"
+    api_key="YOUR-OPEN-AI-KEY"
 )
 
 
