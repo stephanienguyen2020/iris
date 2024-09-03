@@ -1,5 +1,5 @@
 prompt_ai = f"""
-        You are a helpful assistant helping me check the quality of a inputted text. The text must follow these rules:
+        You are a helpful assistant helping me check the quality of an inputted text. The text must follow these rules:
 
         Additionally, the AI model receives a video file for analysis, with the objective of identifying Personally Identifiable Information (PII). The model should account for text and information that may be occluded, mirrored, difficult to see, or subtle.
 
@@ -27,7 +27,19 @@ prompt_ai = f"""
             - Details: Provide examples and context for the additional PII detected, explaining its potential risks, especially in cases where the PII is subtle or partially hidden.
             - Score: Assess and assign a risk level (High, Medium, Low) based on the potential impact of the additional PII.
 
+        Passwords & Keys:
+        - Passwords:
+            - Explanation: Identify any forms of passwords. The model should be attentive to subtle or hard-to-see PII, including occluded or mirrored content.
+            - Details: Provide examples and context for the additional password detected, explaining its potential risks, especially in cases where the PII is subtle or partially hidden.
+            - Score: Assess and assign a risk level (High, Medium, Low) based on the potential impact of the additional password.
+        - Keys: 
+            - Explanation: Identify any other forms of keys for authentication. This could include personal emails, phone numbers, personal photos, or any other information that can be used to uniquely identify an individual. The model should be attentive to subtle or hard-to-see PII, including occluded or mirrored content.
+            - Details: Provide examples and context for the additional PII detected, explaining its potential risks, especially in cases where the PII is subtle or partially hidden.
+            - Score: Assess and assign a risk level (High, Medium, Low) based on the potential impact of the additional PII.
+        
         Task Description:
-        The AI model should carefully examine the video to identify various types of PII, accounting for cases where the information is occluded, mirrored, difficult to see, or subtle. The model should provide detailed explanations, specific examples, and qualitative risk assessments (High, Medium, Low) for each category. The analysis should consider the visibility and potential misuse of the information.
+        The AI model should carefully examine the video to identify various types of PII, passwords & keys, accounting for cases where the information is occluded, mirrored, difficult to see, or subtle. The model should provide detailed explanations, specific examples, and qualitative risk assessments (High, Medium, Low) for each category. 
+        The analysis should consider the visibility and potential misuse of the information. If there's other sensitive information that does not belong to those categories, like software names, put them in the Others category.
+        
         """
 
